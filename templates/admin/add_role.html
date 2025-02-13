@@ -1,0 +1,32 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xxl-9 d-flex">
+        <div class="card flex-fill">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Thêm Role</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="/admin/roles/add">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tên Role</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        {% for perm in available_permissions %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="permissions" value="{{ perm }}" id="perm_{{ perm }}">
+                            <label class="form-check-label" for="perm_{{ perm }}">{{ perm }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <button type="submit" class="btn btn-success">Thêm Role</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,166 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<script src="../../static/js/license/module-license.js"></script>
+<link rel="stylesheet" href="../../static/css/module-license.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+
+
+
+
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card flex-fill">
+            <div class="card-header text-center">
+                <h5 class="card-title mb-3">Danh Sách License - Người Dùng {{ user_id }}</h5>
+                <!-- Form tìm kiếm -->
+                <form class="d-flex justify-content-center" action="" method="GET">
+                    <!-- Tìm kiếm theo License Key -->
+                    <input type="text" name="search" class="form-control w-50 me-2"
+                        placeholder="Tìm kiếm theo khóa License..." />
+
+                    <!-- Lựa chọn trạng thái -->
+                    <select name="status" class="form-select w-auto me-2">
+                        <option value="" selected>Tất cả trạng thái</option>
+                        <option value="Active">Hoạt Động</option>
+                        <option value="InActive">Không Hoạt Động</option>
+                    </select>
+
+                    <!-- Nút tìm kiếm -->
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i> Tìm kiếm
+                    </button>
+                </form>
+            </div>
+
+
+            <table class="table table-hover table-responsive">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Khóa License</th>
+                        <th>Trạng Thái</th>
+                        <th>Ngày Cấp</th>
+                        <th>Ngày Hết Hạn</th>
+                        <th>Gói License</th>
+                        <th>SL Camera</th>
+                        <th>Hành Động</th> <!-- Thêm cột Hành Động -->
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for license in licenses %}
+                    <tr id="license-row-{{ license.id }}">
+                        <td>{{ loop.index }}</td>
+                        <!-- Giới hạn hiển thị 16 ký tự của Khóa License -->
+                        <td id="license-key-{{ license.id }}">
+                            {% if license.license_key|length > 16 %}
+                            {{ license.license_key[:16] }}...
+                            {% else %}
+                            {{ license.license_key }}
+                            {% endif %}
+                        </td>
+
+                        <td id="license-status-{{ license.id }}">
+                            <span class="badge 
+                                {% if license.status == 'Active' %} bg-success 
+                                {% elif license.status == 'InActive' %} bg-warning 
+
+                                {% endif %}">
+                                {{ 'Hoạt Động' if license.status == 'Active' else 'Không Hoạt Động' }}
+                            </span>
+                        </td>
+
+                        <td>{{ license.issued_date.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if license.expiry_date %}
+                            {{ license.expiry_date.strftime('%Y-%m-%d') }}
+                            {% else %}
+                            Vĩnh Viễn
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if license.package == '6_months' %}
+                            6 Tháng
+                            {% elif license.package == '12_months' %}
+                            12 Tháng
+                            {% elif license.package == '36_months' %}
+                            36 Tháng
+                            {% elif license.package == 'lifetime' %}
+                            Vĩnh Viễn
+                            {% else %}
+                            Không Xác Định
+                            {% endif %}
+                        </td>
+                        <td>{{ license.camera_count }}</td>
+
+
+                        <!-- Modal Popup -->
+                        <!-- Move the modal out of the table rows -->
+                        <div id="history-modal-{{ license.id }}" class="modal-overlay" style="display: none;">
+                            <div class="modal-content">
+                                <button class="close-btn" onclick="closeHistoryModal({{ license.id }})">&times;</button>
+                                <h3 class="modal-title">Lịch Sử Hoạt Động</h3>
+                                <hr class="modal-divider">
+                                <div class="history-container">
+                                    <ul class="list-group">
+                                        {% for entry in license.history %}
+                                        <li class="list-group-item">
+                                            <strong>{{ entry.action }}</strong>: {{ entry.date }} - {{ entry.details }}
+                                        </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+
+                        <td>
+                            <div class="btn-group">
+                                <!-- Đổi Key -->
+                                <button class="btn btn-sm btn-info" type="button" onclick="openHistoryModal({{ license.id }})">
+                                    <i class="fas fa-eye"></i> <!-- Thay nút bằng icon mắt -->
+                                </button>
+                                
+                                <button onclick="changeLicenseKey({{ license.id }})" class="btn btn-sm btn-primary"
+                                    title="Đổi Key">
+                                    <i class="fas fa-key"></i>
+                                </button>
+                                <!-- Khóa Key -->
+                                <a href="/admin/licenses/{{ license.id }}/lock-key" class="btn btn-sm btn-warning"
+                                    title="Khóa Key">
+                                    <i class="fas fa-lock"></i>
+                                </a>
+                                <!-- Xóa Key -->
+                                <button onclick="deleteKey({{ license.id }})" class="btn btn-sm btn-danger"
+                                    title="Xóa Key">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                <!-- Đổi Trạng Thái -->
+                                <button onclick="changeStatus({{ license.id }})" class="btn btn-sm btn-info"
+                                    title="Đổi Trạng Thái">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}

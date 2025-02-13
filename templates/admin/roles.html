@@ -1,0 +1,52 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<div class="row justify-content-center">
+    <div class="col-12">
+        <div class="card flex-fill">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Danh sách Roles</h5>
+                <a href="/admin/roles/add" class="btn btn-success btn-sm">
+                    <i class="fas fa-plus"></i> Thêm Role
+                </a>
+            </div>
+            <table class="table table-hover my-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Tên Role</th>
+                        <th class="d-none d-md-table-cell">Permissions</th>
+                        <th>Hành Động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for role in roles %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ role.name }}</td>
+                        <td class="d-none d-md-table-cell">
+                            {% if role.permissions %}
+                                {{ role.permissions | join(', ') }}
+                            {% else %}
+                                Không có quyền
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group">
+                                <!-- Chỉnh Sửa -->
+                                <a href="/admin/{{ role.id }}/edit-role" class="btn btn-sm btn-primary" title="Chỉnh Sửa">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <!-- Xóa -->
+
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

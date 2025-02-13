@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from models import Users, db
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
+from datetime import datetime
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -55,9 +56,11 @@ def login():
 
     if user and user.check_password(password):
         # Tạo access token
+        user.last_login = datetime.now()
+        db.session.commit()
+
         access_token = create_access_token(identity=user.email)
         return jsonify({"access_token": access_token}), 200
-
     return jsonify({"message": "Invalid credentials"}), 401
 
 # Route yêu cầu xác thực JWT

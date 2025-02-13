@@ -5,7 +5,7 @@ class Config:
     JWT_SECRET_KEY = 'xDs8CQZNuMXb2PvkyqLYra9T3EAUmzwBdfh7n4KtFS6eRjWGcg'  # Thêm khóa bí mật cho JWT
     AVAILABLE_PERMISSIONS = ["Dashboard", "Users", "Vai Trò"]
         # Dành cho lúc dev:
-        # chạy cái này trước cloudflared access tcp --hostname mysql.dannycode.site --url localhost:5051
+        # chạy cái này trước
         # Start-Process -FilePath "cloudflared.exe" -ArgumentList "access tcp --hostname mysql.dannycode.site --url localhost:5051" -WindowStyle Hidden
         # Chạy xong sẽ liên kết với server thông qua tunnel của cloudflare => có thể connect từ xa và dùng ip là 127.0.0.1:5051
         # Stop-Process -Name "cloudflared"

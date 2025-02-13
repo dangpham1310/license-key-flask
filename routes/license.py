@@ -6,6 +6,7 @@ import re
 import random
 import string
 from datetime import datetime, timedelta
+from datetime import datetime
 import pytz
 
 license_bp = Blueprint('license_routes', __name__)
@@ -141,6 +142,30 @@ def delete_license(license_id):
 
     return jsonify({"message": f"License with ID {license_id} deleted successfully."}), 200
 
+# Check key cấp 1 và trả về 3 key cấp 2
+@license_bp.route('/level-two-license/<string:license_key>', methods=['GET'])
+@jwt_required()
+def get_license_level2(license_key):
+    license = License.query.filter_by(license_key=license_key).first()
+    if not license:
+        return jsonify({"message": "License not found"}), 404
+
+    # Lấy danh sách SubLicenseKey và function
+    sub_license_data = [
+        {
+            "sub_license_key": sub.sub_license_key,
+            "function": sub.function
+        }
+        for sub in license.sub_licenses
+    ]
+
+    return jsonify({
+        "license_key": license.license_key,
+        "status": license.status,
+        "sub_license_keys": sub_license_data
+    }), 200
+
+
 
 # Kiểm tra license key cấp 2
 @license_bp.route('/check/<string:license>/<string:func>', methods=['GET'])
@@ -148,11 +173,14 @@ def delete_license(license_id):
 def check_license(license,func):
     if func == "time":
         sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="time").first()
+        if not sub_license:
+            return jsonify({"message": "Sub License not found"}), 404
         parent_license = License.query.filter_by(id=sub_license.license_id).first()
         if not parent_license:
             return jsonify({"message": "Parent License not found"}), 404
+        sub_license.last_used = datetime.now()
+        db.session.commit()
         return jsonify({
-            "license_key": parent_license.license_key,
             "package": parent_license.package,
             "expiry_date": parent_license.expiry_date.isoformat() if parent_license.expiry_date else "Vĩnh Viễn",
             "status": parent_license.status
@@ -160,17 +188,33 @@ def check_license(license,func):
 
     elif func == "camera":
         sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="camera").first()
+        if not sub_license:
+            return jsonify({"message": "Sub License not found"}), 404
         parent_license = License.query.filter_by(id=sub_license.license_id).first()
         if not parent_license:
             return jsonify({"message": "Parent License not found"}), 404
+        sub_license.last_used = datetime.now()
+        db.session.commit()
         return jsonify({
             "license_key": parent_license.license_key,
             "package": parent_license.package,
             "camera_count": parent_license.camera_count,
-            "status": parent_license.status
+            "status": parent_license.status,
+            "camera_used": parent_license.camera_used
         }), 200
     elif func == "duty":
+
         sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="duty").first()
+        if not sub_license:
+            return jsonify({"message": "Sub License not found"}), 404
+        parent_license = License.query.filter_by(id=sub_license.license_id).first()
+        if not parent_license:
+            return jsonify({"message": "Parent License not found"}), 404
+        sub_license.last_used = datetime.now()
+        db.session.commit()
+        return jsonify({
+            "Check":"Nhờ Anh Tấn nói lại tại em quên rồi"
+        }), 200
     else:
         return jsonify({"message": "Invalid function"}), 400
 

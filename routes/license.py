@@ -1,6 +1,6 @@
 import uuid
 from flask import Blueprint, jsonify, request
-from models import Users, db, License, SubLicenseKey
+from models import Users, db, License, SubLicenseKey,DeviceUsage
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
 import random
@@ -8,6 +8,7 @@ import string
 from datetime import datetime, timedelta
 from datetime import datetime
 import pytz
+
 
 license_bp = Blueprint('license_routes', __name__)
 
@@ -219,11 +220,8 @@ def check_license(license,func):
         return jsonify({"message": "Invalid function"}), 400
 
 
-# Đếm số lượng camera đã sử dụng
-from datetime import datetime
-from flask import request, jsonify
-from flask_jwt_extended import jwt_required
-from models import db, License, DeviceUsage, SubLicenseKey
+
+
 
 @license_bp.route('/update-camera-usage/<string:sub_license_key>', methods=['POST'])
 @jwt_required()
@@ -277,8 +275,6 @@ def update_camera_usage(sub_license_key):
     
     return jsonify({
         "message": "Camera usage updated successfully",
-        "parent_license_key": license.license_key,  # Trả về License cấp 1
-        "sub_license_key": sub_license.sub_license_key,  # Trả về SubLicenseKey đã dùng
         "total_cameras_used": license.camera_used,  # Tổng số camera đã dùng
         "camera_limit": license.camera_count  # Giới hạn camera của License
     }), 200

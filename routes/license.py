@@ -219,3 +219,66 @@ def check_license(license,func):
         return jsonify({"message": "Invalid function"}), 400
 
 
+# Đếm số lượng camera đã sử dụng
+from datetime import datetime
+from flask import request, jsonify
+from flask_jwt_extended import jwt_required
+from models import db, License, DeviceUsage, SubLicenseKey
+
+@license_bp.route('/update-camera-usage/<string:sub_license_key>', methods=['POST'])
+@jwt_required()
+def update_camera_usage(sub_license_key):
+    """
+    Cập nhật số camera đã sử dụng cho một máy cụ thể thông qua SubLicenseKey (function="camera").
+    """
+    data = request.get_json()
+    device_id = data.get("device_id")  # UUID hoặc MAC Address của máy
+    camera_count = data.get("camera_count")  # Số camera đang sử dụng
+
+    if not device_id or camera_count is None:
+        return jsonify({"message": "Missing device_id or camera_count"}), 400
+
+    # Tìm `SubLicenseKey` với function là "camera"
+    sub_license = SubLicenseKey.query.filter_by(sub_license_key=sub_license_key, function="camera").first()
+    if not sub_license:
+        return jsonify({"message": "SubLicenseKey not found or not for function 'camera'"}), 404
+
+    # Truy xuất License cấp 1 từ SubLicenseKey
+    license = sub_license.license
+    if not license:
+        return jsonify({"message": "Parent License not found"}), 404
+
+    # Kiểm tra nếu số camera vượt quá giới hạn của License
+    if license.camera_used + camera_count > license.camera_count:
+        return jsonify({"message": "Exceeded camera limit"}), 403
+
+    # Kiểm tra xem máy này đã tồn tại trong DeviceUsage chưa
+    device_usage = DeviceUsage.query.filter_by(license_id=license.id, device_id=device_id).first()
+    
+    if device_usage:
+        # Cập nhật số camera đã sử dụng trên máy này
+        device_usage.camera_count = camera_count
+        device_usage.last_updated = datetime.utcnow()
+    else:
+        # Tạo mới bản ghi nếu máy chưa được đăng ký
+        device_usage = DeviceUsage(
+            license_id=license.id,
+            device_id=device_id,
+            camera_count=camera_count,
+            last_updated=datetime.utcnow()
+        )
+        db.session.add(device_usage)
+
+    # Cập nhật tổng số camera đang được sử dụng trong License
+    total_cameras_used = db.session.query(db.func.sum(DeviceUsage.camera_count)).filter_by(license_id=license.id).scalar() or 0
+    license.camera_used = total_cameras_used
+
+    db.session.commit()
+    
+    return jsonify({
+        "message": "Camera usage updated successfully",
+        "parent_license_key": license.license_key,  # Trả về License cấp 1
+        "sub_license_key": sub_license.sub_license_key,  # Trả về SubLicenseKey đã dùng
+        "total_cameras_used": license.camera_used,  # Tổng số camera đã dùng
+        "camera_limit": license.camera_count  # Giới hạn camera của License
+    }), 200

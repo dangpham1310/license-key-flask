@@ -48,6 +48,21 @@ class SubLicenseKey(db.Model):
     last_used = db.Column(db.DateTime, nullable=True)
     function = db.Column(db.String(50), nullable=False)
 
+class DeviceUsage(db.Model):
+    __tablename__ = 'device_usage'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    license_id = db.Column(db.Integer, db.ForeignKey('licenses.id'), nullable=False)
+    device_id = db.Column(db.String(255), nullable=False)  # Mã định danh máy (ví dụ: MAC Address, UUID)
+    camera_count = db.Column(db.Integer, nullable=False, default=0)  # Số camera đang dùng trên máy này
+    last_updated = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    # Liên kết với License
+    license = db.relationship('License', backref='device_usages', lazy=True)
+
+
+
+
+
 class LogsHistory(db.Model):
     __tablename__ = 'logs_history'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

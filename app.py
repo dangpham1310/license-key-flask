@@ -23,9 +23,10 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(license_bp, url_prefix='/license')
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
-# Tạo database khi chạy ứng dụng
-with app.app_context():
-    db.create_all()
+
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # Tạo database khi chạy ứng dụng
+    with app.app_context():
+        db.create_all()
+    app.run(debug=True, port = 8080,host = "0.0.0.0")

@@ -14,6 +14,7 @@ class Users(db.Model):
     phone = db.Column(db.String(20), nullable=True)
     role = db.Column(db.String(50), nullable=False, default='user')  # Default role is 'user'
     licenses = db.relationship('License', backref='user', lazy=True)  # Quan hệ 1-n với License
+    last_login = db.Column(db.DateTime, nullable=True)
     
     def set_password(self, password):
         self.password = generate_password_hash(password)
@@ -33,6 +34,7 @@ class License(db.Model):
     expiry_date = db.Column(db.DateTime, nullable=True)
     package = db.Column(db.String(50), nullable=False)
     camera_count = db.Column(db.Integer, nullable=False, default=0)
+    camera_used = db.Column(db.Integer, nullable=False, default=0)
     history = db.Column(db.JSON, nullable=False, default=[])
     
     # Quan hệ 1-n với SubLicenseKey
@@ -46,11 +48,13 @@ class SubLicenseKey(db.Model):
     last_used = db.Column(db.DateTime, nullable=True)
     function = db.Column(db.String(50), nullable=False)
 
-    def __repr__(self):
-        return f"<SubLicenseKey {self.sub_license_key} - {self.function}>"
+class LogsHistory(db.Model):
+    __tablename__ = 'logs_history'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(255), nullable=False)
+    action = db.Column(db.String(50), nullable=False)
+    time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
-    def __repr__(self):
-        return f"<SubLicenseKey {self.sub_license_key}>"
 
 class Role(db.Model):
     __tablename__ = 'roles'

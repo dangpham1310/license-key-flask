@@ -148,6 +148,30 @@ def delete_license(license_id):
 def check_license(license,func):
     if func == "time":
         sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="time").first()
-        
-    license = License.query.filter_by(license_key=license).first()
+        parent_license = License.query.filter_by(id=sub_license.license_id).first()
+        if not parent_license:
+            return jsonify({"message": "Parent License not found"}), 404
+        return jsonify({
+            "license_key": parent_license.license_key,
+            "package": parent_license.package,
+            "expiry_date": parent_license.expiry_date.isoformat() if parent_license.expiry_date else "Vĩnh Viễn",
+            "status": parent_license.status
+        }), 200
+
+    elif func == "camera":
+        sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="camera").first()
+        parent_license = License.query.filter_by(id=sub_license.license_id).first()
+        if not parent_license:
+            return jsonify({"message": "Parent License not found"}), 404
+        return jsonify({
+            "license_key": parent_license.license_key,
+            "package": parent_license.package,
+            "camera_count": parent_license.camera_count,
+            "status": parent_license.status
+        }), 200
+    elif func == "duty":
+        sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="duty").first()
+    else:
+        return jsonify({"message": "Invalid function"}), 400
+
 

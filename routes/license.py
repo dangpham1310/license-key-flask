@@ -1,6 +1,6 @@
 import uuid
 from flask import Blueprint, jsonify, request
-from models import Users, db, License, SubLicenseKey,DeviceUsage
+from models import Users, db, License, SubLicenseKey,DeviceUsage, LogsHistory
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
 import random
@@ -271,6 +271,10 @@ def update_camera_usage(sub_license_key):
     # Cập nhật tổng số camera đang được sử dụng trong License
     total_cameras_used = db.session.query(db.func.sum(DeviceUsage.camera_count)).filter_by(license_id=license.id).scalar() or 0
     license.camera_used = total_cameras_used
+
+    logs_history = LogsHistory(email = license.user.email, action="Cập Nhật Camera Đang Sử Dụng")
+    
+    db.session.add(logs_history)
     db.session.commit()
     
     return jsonify({

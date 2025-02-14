@@ -16,7 +16,6 @@ license_bp = Blueprint('license_routes', __name__)
 @jwt_required()
 def create_license():
     email = get_jwt_identity()
-    print(email)
     user = Users.query.filter_by(email=email).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
@@ -204,7 +203,6 @@ def check_license(license,func):
             "camera_used": parent_license.camera_used
         }), 200
     elif func == "duty":
-
         sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="duty").first()
         if not sub_license:
             return jsonify({"message": "Sub License not found"}), 404
@@ -232,7 +230,7 @@ def update_camera_usage(sub_license_key):
     data = request.get_json()
     device_id = data.get("device_id")  # UUID hoặc MAC Address của máy
     camera_count = data.get("camera_count")  # Số camera đang sử dụng
-
+    print("device_id: ",device_id)
     if not device_id or camera_count is None:
         return jsonify({"message": "Missing device_id or camera_count"}), 400
 
@@ -247,18 +245,21 @@ def update_camera_usage(sub_license_key):
         return jsonify({"message": "Parent License not found"}), 404
 
     # Kiểm tra nếu số camera vượt quá giới hạn của License
-    if license.camera_used + camera_count > license.camera_count:
-        return jsonify({"message": "Exceeded camera limit"}), 403
+    # print("license.camera_used: ",license.camera_used)
+    # print("camera_count: ",camera_count)
 
     # Kiểm tra xem máy này đã tồn tại trong DeviceUsage chưa
     device_usage = DeviceUsage.query.filter_by(license_id=license.id, device_id=device_id).first()
-    
+
     if device_usage:
-        # Cập nhật số camera đã sử dụng trên máy này
+        if int(camera_count) > license.camera_count:
+            return jsonify({"message": "Exceeded camera limit"}), 403
         device_usage.camera_count = camera_count
         device_usage.last_updated = datetime.utcnow()
     else:
         # Tạo mới bản ghi nếu máy chưa được đăng ký
+        if license.camera_used + int(camera_count) > license.camera_count:
+            return jsonify({"message": "Exceeded camera limit"}), 403
         device_usage = DeviceUsage(
             license_id=license.id,
             device_id=device_id,
@@ -270,7 +271,6 @@ def update_camera_usage(sub_license_key):
     # Cập nhật tổng số camera đang được sử dụng trong License
     total_cameras_used = db.session.query(db.func.sum(DeviceUsage.camera_count)).filter_by(license_id=license.id).scalar() or 0
     license.camera_used = total_cameras_used
-
     db.session.commit()
     
     return jsonify({

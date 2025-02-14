@@ -43,7 +43,8 @@ def register():
     db.session.add(new_user)
 
     # Tạo log
-    log = LogsHistory(user_id=new_user.id, action="Register")
+    log = LogsHistory(email = email, action="Đăng Kí Mới")
+    db.session.add(log)
 
 
     db.session.commit()
@@ -62,6 +63,10 @@ def login():
     if user and user.check_password(password):
         # Tạo access token
         user.last_login = datetime.now()
+
+        # Tạo log
+        log = LogsHistory(email = email, action="Đăng Nhập")
+        db.session.add(log)
         db.session.commit()
 
         access_token = create_access_token(identity=user.email)

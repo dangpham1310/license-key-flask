@@ -7,6 +7,8 @@ from routes.admin import admin_bp
 from models import db
 from config import Config
 from flask_migrate import Migrate
+from threading_run import start_expiry_thread
+import threading
 app = Flask(__name__)
 app.config.from_object(Config)
 
@@ -24,9 +26,10 @@ app.register_blueprint(license_bp, url_prefix='/license')
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
 
+start_expiry_thread(app)
 
 if __name__ == '__main__':
     # Tạo database khi chạy ứng dụng
     with app.app_context():
         db.create_all()
-    app.run(debug=True, port = 8080,host = "0.0.0.0")
+    app.run(debug=False, port = 9988,host = "0.0.0.0")

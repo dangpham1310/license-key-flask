@@ -32,4 +32,4 @@ if __name__ == '__main__':
     # Tạo database khi chạy ứng dụng
     with app.app_context():
         db.create_all()
-    app.run(debug=False, port = 9988,host = "0.0.0.0")
+    app.run(debug=True, port = 9988,host = "0.0.0.0")

@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, flash, jsonify, request, render_template, redirect, session
-from models import Users, db, License,Role
+from models import Users, db, License,Role, LogsHistory
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
 import random
@@ -130,6 +130,20 @@ def delete_key(license_id):
         "message": "License deleted successfully",
         "license_id": license_id
     }), 200
+
+#########################################################################################
+####### --------------------------- LogsHistory --------------------------- #############
+#########################################################################################
+
+
+@admin_bp.route('/logs')
+def logs_list():
+    page = request.args.get('page', 1, type=int)  # Lấy số trang từ request, mặc định là trang 1
+    per_page = 50  # Số logs mỗi trang
+
+    logs = LogsHistory.query.order_by(LogsHistory.time.desc()).paginate(page=page, per_page=per_page, error_out=False)
+
+    return render_template('admin/logs.html', logs=logs)
 
 
 #########################################################################################

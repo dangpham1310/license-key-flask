@@ -282,3 +282,5 @@ def update_camera_usage(sub_license_key):
         "total_cameras_used": license.camera_used,  # Tổng số camera đã dùng
         "camera_limit": license.camera_count  # Giới hạn camera của License
     }), 200
+
+

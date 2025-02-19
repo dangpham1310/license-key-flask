@@ -68,11 +68,16 @@
                             <span class="badge 
                                 {% if license.status == 'Active' %} bg-success 
                                 {% elif license.status == 'InActive' %} bg-warning 
-
+                                {% elif license.status == 'Expired' %} bg-danger 
+                                {% else %} bg-secondary 
                                 {% endif %}">
-                                {{ 'Hoạt Động' if license.status == 'Active' else 'Không Hoạt Động' }}
+                                {{ 'Hoạt Động' if license.status == 'Active' 
+                                else 'Không Hoạt Động' if license.status == 'InActive' 
+                                else 'Hết Hạn' if license.status == 'Expired' 
+                                else 'Không Xác Định' }}
                             </span>
                         </td>
+                        
 
                         <td>{{ license.issued_date.strftime('%Y-%m-%d') }}</td>
                         <td>
@@ -95,7 +100,8 @@
                             Không Xác Định
                             {% endif %}
                         </td>
-                        <td>{{ license.camera_count }}</td>
+                        <td>{{ license.camera_used }}/{{ license.camera_count }}</td>
+
 
 
                         <!-- Modal Popup -->

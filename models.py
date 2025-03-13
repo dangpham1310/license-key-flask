@@ -53,15 +53,19 @@ class DutyFunction(db.Model):
     __tablename__ = 'duty_function'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     sub_license_key_id = db.Column(db.Integer, db.ForeignKey('sub_license_keys.id'), nullable=False, unique=True)
-    face = db.Column(db.Boolean, default=False)
-    bus = db.Column(db.Boolean, default=False)
-    plates = db.Column(db.Boolean, default=False)
+    face_recognition = db.Column(db.Boolean, default=False)
+    heatmap = db.Column(db.Boolean, default=False)
+    object_counting = db.Column(db.Boolean, default=False)
+    license_plate = db.Column(db.Boolean, default=False)
+    safe_danger_zone = db.Column(db.Boolean, default=False)
 
-    def __init__(self, sub_license_key_id, face=False, bus=False, plates=False):
+    def __init__(self, sub_license_key_id, face_recognition=False, heatmap=False, object_counting=False, license_plate=False, safe_danger_zone=False):
         self.sub_license_key_id = sub_license_key_id
-        self.face = face
-        self.bus = bus
-        self.plates = plates
+        self.face_recognition = face_recognition
+        self.heatmap = heatmap
+        self.object_counting = object_counting
+        self.license_plate = license_plate
+        self.safe_danger_zone = safe_danger_zone
 
 
 

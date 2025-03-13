@@ -225,7 +225,19 @@ def check_license(license,func):
     else:
         return jsonify({"message": "Invalid function"}), 400
 
-
+@license_bp.route('/check_duty_function', methods=['GET'])
+def check_duty_function():
+    missing_entries = []
+    duty_keys = SubLicenseKey.query.filter_by(function="duty").all()
+    
+    for key in duty_keys:
+        if not key.duty_function:
+            new_duty_function = DutyFunction(sub_license_key_id=key.id)
+            db.session.add(new_duty_function)
+            missing_entries.append(key.sub_license_key)
+    
+    db.session.commit()
+    return jsonify({"updated_keys": missing_entries})
 
 
 

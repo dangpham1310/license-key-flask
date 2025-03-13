@@ -82,12 +82,10 @@ class DeviceUsage(db.Model):
 
 
 
-
-
 class LogsHistory(db.Model):
     __tablename__ = 'logs_history'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255), nullable=False)
     action = db.Column(db.String(50), nullable=False)
     time = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 

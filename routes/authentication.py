@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from models import Users, db
+from models import Users, db,LogsHistory
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
 from datetime import datetime
@@ -41,6 +41,12 @@ def register():
     new_user = Users(email=email, name=name, phone=phone)
     new_user.set_password(password)  # Hash mật khẩu
     db.session.add(new_user)
+
+    # Tạo log
+    log = LogsHistory(email = email, action="Đăng Kí Mới")
+    db.session.add(log)
+
+
     db.session.commit()
 
     return jsonify({"message": "User registered successfully"}), 201
@@ -57,6 +63,10 @@ def login():
     if user and user.check_password(password):
         # Tạo access token
         user.last_login = datetime.now()
+
+        # Tạo log
+        log = LogsHistory(email = email, action="Đăng Nhập")
+        db.session.add(log)
         db.session.commit()
 
         access_token = create_access_token(identity=user.email)

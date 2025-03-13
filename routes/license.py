@@ -1,6 +1,6 @@
 import uuid
 from flask import Blueprint, jsonify, request
-from models import Users, db, License, SubLicenseKey,DeviceUsage
+from models import DutyFunction, Users, db, License, SubLicenseKey,DeviceUsage
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
 import random
@@ -94,6 +94,13 @@ def create_license():
             sub_license_key=str(uuid.uuid4()),  # Key ngẫu nhiên bằng UUID
             function=func
         )
+
+        if func == "duty":
+            # Tạo mới bản ghi DutyFunction
+            duty_func = DutyFunction(
+                sub_license_key_id=sub_key.id
+            )
+            db.session.add(duty_func)
         db.session.add(sub_key)  # Thêm vào session
 
     db.session.add(new_license)  # Thêm license
@@ -204,7 +211,6 @@ def check_license(license,func):
             "camera_used": parent_license.camera_used
         }), 200
     elif func == "duty":
-
         sub_license = SubLicenseKey.query.filter_by(sub_license_key=license, function="duty").first()
         if not sub_license:
             return jsonify({"message": "Sub License not found"}), 404
@@ -214,7 +220,7 @@ def check_license(license,func):
         sub_license.last_used = datetime.now()
         db.session.commit()
         return jsonify({
-            "Check":"Nhờ Anh Tấn nói lại tại em quên rồi"
+            "face":"on","plates":"off","...":"on"
         }), 200
     else:
         return jsonify({"message": "Invalid function"}), 400

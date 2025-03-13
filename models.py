@@ -48,6 +48,23 @@ class SubLicenseKey(db.Model):
     last_used = db.Column(db.DateTime, nullable=True)
     function = db.Column(db.String(50), nullable=False)
 
+
+class DutyFunction(db.Model):
+    __tablename__ = 'duty_function'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    sub_license_key_id = db.Column(db.Integer, db.ForeignKey('sub_license_keys.id'), nullable=False, unique=True)
+    face = db.Column(db.Boolean, default=False)
+    bus = db.Column(db.Boolean, default=False)
+    plates = db.Column(db.Boolean, default=False)
+
+    def __init__(self, sub_license_key_id, face=False, bus=False, plates=False):
+        self.sub_license_key_id = sub_license_key_id
+        self.face = face
+        self.bus = bus
+        self.plates = plates
+
+
+
 class DeviceUsage(db.Model):
     __tablename__ = 'device_usage'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

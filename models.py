@@ -48,6 +48,8 @@ class SubLicenseKey(db.Model):
     last_used = db.Column(db.DateTime, nullable=True)
     function = db.Column(db.String(50), nullable=False)
 
+    duty_function = db.relationship('DutyFunction', backref='sub_license_key', uselist=False)
+
 
 class DutyFunction(db.Model):
     __tablename__ = 'duty_function'

@@ -219,25 +219,38 @@ def check_license(license,func):
             return jsonify({"message": "Parent License not found"}), 404
         sub_license.last_used = datetime.now()
         db.session.commit()
+
+        duty_function = DutyFunction.query.filter_by(sub_license_key_id=sub_license.id).first()
+
+        # Kiểm tra nếu không có DutyFunction
+        if not duty_function:
+            return jsonify({"message": "Duty Function not found"}), 404
+
+        # Trả về thông tin DutyFunction
         return jsonify({
-            "face":"on","plates":"off","...":"on"
+            "face_recognition": duty_function.face_recognition,
+            "license_plate": duty_function.license_plate,
+            "heatmap": duty_function.heatmap,
+            "object_counting": duty_function.object_counting,
+            "safe_danger_zone": duty_function.safe_danger_zone
         }), 200
     else:
         return jsonify({"message": "Invalid function"}), 400
 
-@license_bp.route('/check_duty_function', methods=['GET'])
-def check_duty_function():
-    missing_entries = []
-    duty_keys = SubLicenseKey.query.filter_by(function="duty").all()
+# @license_bp.route('/check_duty_function', methods=['GET'])
+# def check_duty_function():
+#     missing_entries = []
+#     duty_keys = SubLicenseKey.query.filter_by(function="duty").all()
+#     print(duty_keys)
+#     for key in duty_keys:
+#         print(key.duty_function)
+#         if not key.duty_function:
+#             new_duty_function = DutyFunction(sub_license_key_id=key.id)
+#             db.session.add(new_duty_function)
+#             missing_entries.append(key.sub_license_key)
     
-    for key in duty_keys:
-        if not key.duty_function:
-            new_duty_function = DutyFunction(sub_license_key_id=key.id)
-            db.session.add(new_duty_function)
-            missing_entries.append(key.sub_license_key)
-    
-    db.session.commit()
-    return jsonify({"updated_keys": missing_entries})
+#     db.session.commit()
+#     return jsonify({"updated_keys": missing_entries})
 
 
 

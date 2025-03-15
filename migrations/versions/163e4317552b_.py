@@ -1,8 +1,8 @@
-"""Recreating lost migration
+"""empty message
 
-Revision ID: 641b06e6d6ae
-Revises: da26574f1e7b
-Create Date: 2025-02-14 11:14:30.525668
+Revision ID: 163e4317552b
+Revises: 
+Create Date: 2025-03-15 13:43:07.565209
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '641b06e6d6ae'
-down_revision = 'da26574f1e7b'
+revision = '163e4317552b'
+down_revision = None
 branch_labels = None
 depends_on = None
 

@@ -70,11 +70,19 @@ def login():
         db.session.add(log)
         db.session.commit()
 
-        access_token = create_access_token(identity=user.email, expires_delta=timedelta(seconds=99999999999))
+        access_token = create_access_token(identity=user.email, expires_delta=timedelta(hours=100000))
         refresh_token = create_refresh_token(identity=user.email)
         return jsonify({"access_token": access_token,"refresh_token": refresh_token}), 200
     return jsonify({"message": "Invalid credentials"}), 401
 
+@auth_bp.route('/token/refresh', methods=['POST'])
+@jwt_required(refresh=True)  # Yêu cầu phải cung cấp refresh token hợp lệ
+def refresh():
+    # Lấy thông tin user từ refresh token
+    current_user = get_jwt_identity()
+    # Tạo access token mới với thời gian hiệu lực như mong muốn
+    new_access_token = create_access_token(identity=current_user, expires_delta=timedelta(hours=100000))
+    return jsonify({"access_token": new_access_token}), 200
 
 
 # Route yêu cầu xác thực JWT

@@ -1,5 +1,5 @@
 from flask import Blueprint, current_app, flash, jsonify, request, render_template, redirect, session
-from models import Users, db, License,Role, LogsHistory
+from models import DutyFunction, SubLicenseKey, Users, db, License,Role, LogsHistory
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 import re
 import random
@@ -130,6 +130,101 @@ def delete_key(license_id):
         "message": "License deleted successfully",
         "license_id": license_id
     }), 200
+
+@admin_bp.route('/key-function/<int:license_id>', methods=['GET'])
+def get_key_function(license_id):
+    # Truy vấn License theo license_id
+    license = License.query.get(license_id)
+    if not license:
+        return jsonify({"message": "License not found"}), 404
+    
+    # Truy vấn SubLicenseKey có function = "duty"
+    sub_licenses = SubLicenseKey.query.filter_by(license_id=license.id, function="duty").all()
+    
+    if not sub_licenses:
+        return jsonify({"message": "No Sub License found with 'duty' function"}), 404
+    
+    # Danh sách các duty function
+    duty_functions = []
+    
+    for sub_license in sub_licenses:
+        duty_function = DutyFunction.query.filter_by(sub_license_key_id=sub_license.id).first()
+        if duty_function:
+            duty_functions.append({
+                "face_recognition": "on" if duty_function.face_recognition else "off",
+                "heatmap": "on" if duty_function.heatmap else "off",
+                "object_counting": "on" if duty_function.object_counting else "off",
+                "license_plate": "on" if duty_function.license_plate else "off",
+                "safe_danger_zone": "on" if duty_function.safe_danger_zone else "off"
+            })
+
+
+    print(duty_functions)
+    return render_template('admin/duty_function.html', duty_functions=duty_functions, license_id=license_id)
+    # Trả về danh sách các duty function vào HTML template
+
+
+
+@admin_bp.route('/key-function/update_status/<int:license_id>', methods=['POST'])
+def update_status(license_id):
+    # Truy vấn License theo license_id
+    license = License.query.get(license_id)
+    if not license:
+        print("License not found")
+        return jsonify({"success": False, "message": "License not found"}), 404
+
+    # Truy vấn SubLicenseKey có function = "duty"
+    sub_licenses = SubLicenseKey.query.filter_by(license_id=license.id, function="duty").all()
+    if not sub_licenses:
+        print("No Sub License found with 'duty' function")
+        return jsonify({"success": False, "message": "No Sub License found with 'duty' function"}), 404
+
+    data = request.get_json()
+    function_name = data.get('function')
+    new_status = data.get('status')
+    index = data.get('index')
+    
+
+    index = int(index) - 1  # Vì loop.index trong Jinja bắt đầu từ 1, nên trừ đi 1 để truy cập đúng
+    if index < 0 or index >= len(sub_licenses):
+        return jsonify({"success": False, "message": "Index out of range"}), 400
+
+    # Lấy sub_license tương ứng và duty_function của nó
+    sub_license = sub_licenses[index]
+    duty_function = DutyFunction.query.filter_by(sub_license_key_id=sub_license.id).first()
+    if not duty_function:
+        print("Duty function not found")
+        return jsonify({"success": False, "message": "Duty function not found"}), 404
+
+    # Kiểm tra xem đối tượng duty_function có thuộc tính function_name không
+    if hasattr(duty_function, function_name):
+        setattr(duty_function, function_name, True if new_status == "on" else False)
+        db.session.commit()
+        return jsonify({"success": True, "message": f"Updated {function_name} to {new_status}"})
+    else:
+        print("Function not found")
+        return jsonify({"success": False, "message": "Function not found"}), 404
+
+
+
+
+
+
+    data = request.get_json()
+    function_name = data.get('function')
+    new_status = data.get('status')
+    index = data.get('index')
+    try:
+        # Vì loop.index trong Jinja bắt đầu từ 1, nên trừ đi 1 để truy cập đúng phần tử
+        index = int(index) - 1
+        if function_name in duty_functions[index]:
+            duty_functions[index][function_name] = new_status
+            return jsonify({"success": True, "message": f"Updated {function_name} to {new_status}"})
+        else:
+            return jsonify({"success": False, "message": "Function not found"}), 404
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)}), 500
+
 
 #########################################################################################
 ####### --------------------------- LogsHistory --------------------------- #############

@@ -6,6 +6,6 @@ class Config:
     AVAILABLE_PERMISSIONS = ["Dashboard", "Users", "Vai Trò"]
         # Dành cho lúc dev:
         # chạy cái này trước
-        # Start-Process -FilePath "cloudflared.exe" -ArgumentList "access tcp --hostname mysql.dannycode.site --url localhost:5051" -WindowStyle Hidden
+        # Start-Process -FilePath "cloudflared.exe" -ArgumentList "access tcp --hostname mysql.tandoan.asia --url localhost:5051" -WindowStyle Hidden
         # Chạy xong sẽ liên kết với server thông qua tunnel của cloudflare => có thể connect từ xa và dùng ip là 127.0.0.1:5051
         # Stop-Process -Name "cloudflared"

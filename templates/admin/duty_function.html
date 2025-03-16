@@ -1,0 +1,167 @@
+{% extends "admin/layout.html" %}
+
+{% block content %}
+    <div class="container">
+        <h1>Danh Sách Chức Năng</h1>
+
+        {% if duty_functions %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Function</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for duty_function in duty_functions %}
+                        <tr>
+                            <td>Face Recognition</td>
+                            <td>
+                                <label class="switch">
+                                    <!-- Bỏ disabled để cho phép tương tác -->
+                                    <input type="checkbox" id="faceRecognition{{ loop.index }}" {% if duty_function.face_recognition == "on" %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Heatmap</td>
+                            <td>
+                                <label class="switch">
+                                    <input type="checkbox" id="heatmap{{ loop.index }}" {% if duty_function.heatmap == "on" %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Object Counting</td>
+                            <td>
+                                <label class="switch">
+                                    <input type="checkbox" id="objectCounting{{ loop.index }}" {% if duty_function.object_counting == "on" %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>License Plate Recognition</td>
+                            <td>
+                                <label class="switch">
+                                    <input type="checkbox" id="licensePlate{{ loop.index }}" {% if duty_function.license_plate == "on" %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Safe Danger Zone</td>
+                            <td>
+                                <label class="switch">
+                                    <input type="checkbox" id="safeDangerZone{{ loop.index }}" {% if duty_function.safe_danger_zone == "on" %}checked{% endif %}>
+                                    <span class="slider round"></span>
+                                </label>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No duty functions found for this license.</p>
+        {% endif %}
+    </div>
+
+    <!-- Script để xử lý sự kiện thay đổi và gửi AJAX request -->
+    <script>
+        document.querySelectorAll('input[type="checkbox"]').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function() {
+                const status = this.checked ? 'on' : 'off';
+                let functionName;
+
+                // Xác định tên function dựa vào id của checkbox
+                if (this.id.startsWith("faceRecognition")) {
+                    functionName = "face_recognition";
+                } else if (this.id.startsWith("heatmap")) {
+                    functionName = "heatmap";
+                } else if (this.id.startsWith("objectCounting")) {
+                    functionName = "object_counting";
+                } else if (this.id.startsWith("licensePlate")) {
+                    functionName = "license_plate";
+                } else if (this.id.startsWith("safeDangerZone")) {
+                    functionName = "safe_danger_zone";
+                }
+
+                // Lấy số thứ tự từ id (ví dụ: faceRecognition1 → số 1)
+                const index = this.id.match(/\d+$/)[0];
+
+                // Gửi AJAX request dùng fetch API
+                fetch('/admin/key-function/update_status/{{ license_id }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        function: functionName,
+                        status: status,
+                        index: index
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (!data.success) {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        });
+    </script>
+
+    <!-- Include custom styles cho toggle switches -->
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            border-radius: 50%;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+        }
+
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+{% endblock %}
